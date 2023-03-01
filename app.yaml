@@ -2,7 +2,7 @@ runtime: nodejs14
 
 env_variables:
   FIREBASE_PROJECT_ID: registra-app
-  GOOGLE_APPLICATION_CREDENTIALS: /app/serviceAccountKey.json
+  GOOGLE_APPLICATION_CREDENTIALS: /serviceAccountKey.json
 
 handlers:
   - url: /.*

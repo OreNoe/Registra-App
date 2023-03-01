@@ -1,7 +1,7 @@
 const {google} = require('googleapis');
 const admin = require('firebase-admin');
 
-const serviceAccount = require('./serviceAccountKey.json');
+const serviceAccount = require(GOOGLE_APPLICATION_CREDENTIALS);
 
 admin.initializeApp({
     credential: admin.credential.cert(serviceAccount),
@@ -11,7 +11,7 @@ const db = admin.firestore();
 
 
 const auth = new google.auth.GoogleAuth({
-    keyFile: './serviceAccountKey.json',
+    keyFile: GOOGLE_APPLICATION_CREDENTIALS.keyFile,
     scopes: 'https://www.googleapis.com/auth/spreadsheets',
 });
 

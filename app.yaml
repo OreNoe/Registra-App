@@ -2,4 +2,4 @@ runtime: nodejs14
 
 handlers:
   - url: /.*
-    script: node index.js
+    script: auto

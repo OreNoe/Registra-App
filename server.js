@@ -11,7 +11,7 @@ const db = admin.firestore();
 
 
 const auth = new google.auth.GoogleAuth({
-    keyFile: serviceAccount.keyFile,
+    keyFile: './serviceAccountKey.json',
     scopes: 'https://www.googleapis.com/auth/spreadsheets',
 });
 

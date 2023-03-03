@@ -24,17 +24,17 @@ db.collection('users').onSnapshot((snapshot) => {
     const rows = snapshot.docs.map((doc) => {
         const data = doc.data();
         console.log(data);
-        return [data.name, data.surname ,data.email, data.lvl, data.state];
+        return [data.name, data.surname ,data.email, data.lvl, data.encargado, data.state];
     });
 
-    rows.unshift(['Name', 'Surname', 'Email', 'Nivel', 'Status']);
+    rows.unshift(['Name', 'Surname', 'Email', 'Nivel',  'Encargado', 'Status']);
 
     snapshot.docChanges().forEach((change) => {
         if (change.type === 'removed') {
 
           sheets.spreadsheets.values.clear({
               spreadsheetId: sheetId,
-              range: 'Sheet1!A2:E10000',
+              range: 'Sheet1!A2:F10000',
           }, (err, result) => {
               if (err) {
                   console.log(err);

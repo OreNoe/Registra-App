@@ -26,13 +26,12 @@ db.collection('events').onSnapshot(snapshot => {
         const doc = change.doc;
         const rows = snapshot.docs.map(doc => {
             const data = doc.data();
-            console.log(data);
-            return [data.name, data.surname ,data.email, data.lvl, data.encargado, data.state];
+            return [data.name];
         });
 
-        rows.unshift(['Name', 'Surname', 'Email', 'Nivel',  'Encargado', 'Status']);
+        rows.unshift(['Name']);
 
-        if (change.type == 'added' || change.type == 'modified'){
+        if (change.type === 'added') {
             const event = doc.data();
             const eventSheetName = event.name;
             const eventSheet = {
@@ -41,53 +40,95 @@ db.collection('events').onSnapshot(snapshot => {
                     requests: [{
                         addSheet: {
                             properties: {
-                                title: eventSheetName
-                            }
-                        }
-                    }]
-                }
+                                title: eventSheetName,
+                            },
+                        },
+                    
+                    }],
+                },
+            };
+
+            sheets.spreadsheets.batchUpdate(eventSheet, (err, res) => {
+                if (err) return console.log('The API returned an error: ' + err);
+                //console.log(res);
+                sheets.spreadsheets.get({
+                    spreadsheetId: sheetId,
+                }, (err, res) => {
+                    if (err) return console.log('The API returned an error: ' + err);
+                    const id = res.data.sheets.find(s => s.properties.title === eventSheetName).properties.sheetId;
+    
+                    const eventS = {
+                        spreadsheetId: sheetId,
+                        resource: {
+                            requests: [{
+                                addConditionalFormatRule: {
+                                    rule: {
+                                        ranges: [{
+                                            sheetId: id,
+                                            startRowIndex: 0,
+                                            endRowIndex: 1000,
+                                            startColumnIndex: 4,
+                                            endColumnIndex: 6,
+                                        }],
+                                        booleanRule: {
+                                            condition: {
+                                                type: 'TEXT_EQ',
+                                                values: [{
+                                                    userEnteredValue: 'true',
+                                                }],
+                                            },
+                                            format: {
+                                                backgroundColor: {
+                                                    red: 0.0,
+                                                    green: 1.0,
+                                                    blue: 0.0,
+                                                },
+                                            },
+                                        },
+                                    },
+                                    index: 0,
+                                },
+                            }],
+                        },
+                    };
+                    sheets.spreadsheets.batchUpdate(eventS, (err, res) => {
+                        if (err) return console.log('The API returned an error: ' + err);
+                        //console.log(res);
+                    });
+                });
+            });
+
+            //get the sheet id
+            
+
+
+        }else if (change.type === 'modified') {
+            const event = doc.data();
+            const eventSheetName = event.name;
+            const eventSheet = {
+                spreadsheetId: sheetId,
+                resource: {
+                    requests: [{
+                        updateSheetProperties: {
+                            properties: {
+                                title: eventSheetName,
+                            },
+                            fields: 'title',
+                        },
+                    }],
+                },
             };
             sheets.spreadsheets.batchUpdate(eventSheet, (err, res) => {
                 if (err) return console.log('The API returned an error: ' + err);
-                console.log('Sheet created');
+                //console.log(res);
             });
-
-            db.collection('events').doc(doc.id).collection('users').onSnapshot(snapshot => {
-                const rows = snapshot.docs.map((doc) => {
-                    const data = doc.data();
-                    console.log(data);
-                    return [data.name, data.surname ,data.email, data.lvl, data.encargado, data.state];
-                });
-            
-                rows.unshift(['Name', 'Surname', 'Email', 'Nivel',  'Encargado', 'Status']);
-            
-                snapshot.docChanges().forEach((change) => {
-                    if (change.type === 'removed') {
-                    }else{
-                        sheets.spreadsheets.values.update({
-                          spreadsheetId: sheetId,
-                          range: doc.id+'!A1:F10000',
-                          valueInputOption: 'USER_ENTERED',
-                          resource: {
-                              values: rows,
-                          },
-                      }, (err, result) => {
-                          if (err) {
-                              console.log(err);
-                          }else
-                              console.log('%d cells updated.', result.updatedCells);
-                      });
-                    }
-                });
-            });
-
-        }else{
+        }else if (change.type === 'removed') {
             sheets.spreadsheets.get({
                 spreadsheetId: sheetId,
             }, (err, res) => {
                 if (err) return console.log('The API returned an error: ' + err);
                 const id = res.data.sheets.find(s => s.properties.title === doc.id).properties.sheetId;
-                console.log(id);
+                //console.log(id);
                 //delete the sheet
                 sheets.spreadsheets.batchUpdate({
                     spreadsheetId: sheetId,
@@ -99,10 +140,60 @@ db.collection('events').onSnapshot(snapshot => {
                         }]
                     }
                 }, (err, res) => {
-                    if (err) return console.log('The API returned an AAAAAA: ' + err);
-                    console.log('Sheet deleted');
+                    if (err) return console.log('The API returned an error: ' + err);
+                    //console.log(res);
                 });
             });
         }
+    });
+});
+
+
+db.collection('events').onSnapshot(snapshot => {
+    snapshot.docChanges().forEach(change => {
+        const doc = change.doc;
+        db.collection('events').doc(doc.id).collection('users').onSnapshot(snapshot => {
+            const rows = snapshot.docs.map(doc => {
+                const data = doc.data();
+                console.log(data);
+                return [data.name, data.surname, data.email, data.lvl, data.encargado, data.status];
+            });
+
+            rows.unshift(['Name', 'Surname', 'Email', 'Nivel', 'Encargado', 'Status']);
+
+            if (change.type === 'added') {
+                sheets.spreadsheets.values.update({
+                    spreadsheetId: sheetId,
+                    range: `${doc.id}!A1`,
+                    valueInputOption: 'USER_ENTERED',
+                    resource: {
+                        values: rows,
+                    },
+                }, (err, res) => {
+                    if (err) return console.log('The API returned an error: ' + err);
+                    //console.log(res);
+                });
+            }else if (change.type === 'modified') {
+                sheets.spreadsheets.values.update({
+                    spreadsheetId: sheetId,
+                    range: `${doc.id}!A1`,
+                    valueInputOption: 'USER_ENTERED',
+                    resource: {
+                        values: rows,
+                    },
+                }, (err, res) => {
+                    if (err) return console.log('The API returned an error: ' + err);
+                    //console.log(res);
+                });
+            }else if (change.type === 'removed') {
+                sheets.spreadsheets.values.clear({
+                    spreadsheetId: sheetId,
+                    range: `${doc.id}!A1`,
+                }, (err, res) => {
+                    if (err) return console.log('The API returned an error: ' + err);
+                    //dconsole.log(res);
+                });
+            }
+        });
     });
 });

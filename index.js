@@ -21,12 +21,13 @@ const sheetId = '1gwRs4BXhF2GN6-X0-34_mLUR8OjeGEeWSHvExclMH3Q';
 const range = 'Sheet1';
 
 db.collection('events').onSnapshot(snapshot => {
+
     snapshot.docChanges().forEach(change => {
         const doc = change.doc;
         const rows = snapshot.docs.map(doc => {
             const data = doc.data();
             console.log(data);
-            return [data.name, data.email, data.phone, data.date, data.time, data.message];
+            return [data.name, data.surname ,data.email, data.lvl, data.encargado, data.state];
         });
 
         rows.unshift(['Name', 'Surname', 'Email', 'Nivel',  'Encargado', 'Status']);

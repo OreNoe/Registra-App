@@ -1,5 +1,7 @@
 const {google} = require('googleapis');
 const admin = require('firebase-admin');
+const fs = require('fs');
+const ptp = require('node-printer');
 
 const serviceAccount = require('./serviceAccountKey.json');
 
@@ -185,6 +187,12 @@ db.collection('events').onSnapshot(snapshot => {
                     if (err) return console.log('The API returned an error: ' + err);
                     //console.log(res);
                 });
+                //send to printer the name of the user
+                const user = doc.data();
+                const name = user.name;
+                printName(name);
+
+                
             }else if (change.type === 'removed') {
                 sheets.spreadsheets.values.clear({
                     spreadsheetId: sheetId,
@@ -197,3 +205,22 @@ db.collection('events').onSnapshot(snapshot => {
         });
     });
 });
+
+function printName(name) {
+    const doc = new PDFDocument();
+    doc.pipe(fs.createWriteStream('name.pdf'));
+    doc.fontSize(60);
+    doc.text(name, 0, 0);
+    doc.end();
+
+    printer.getDefaultPrinter().then(printerName => {
+        printer
+            .print('name.pdf', {
+                printer: printerName.name,
+                paperSize: 'A9',
+                
+            })
+            .then(jobID => console.log('Printed to printer with ID: ', jobID))
+            .catch(err => console.log('Error: ', err));
+    });
+}

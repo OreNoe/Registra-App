@@ -190,7 +190,7 @@ db.collection('events').onSnapshot(snapshot => {
                 //send to printer the name of the user
                 const user = doc.data();
                 const name = user.name;
-                printName(name);
+                //printName(name);
 
                 
             }else if (change.type === 'removed') {
@@ -205,7 +205,7 @@ db.collection('events').onSnapshot(snapshot => {
         });
     });
 });
-
+/*
 function printName(name) {
     const doc = new PDFDocument();
     doc.pipe(fs.createWriteStream('name.pdf'));
@@ -223,4 +223,4 @@ function printName(name) {
             .then(jobID => console.log('Printed to printer with ID: ', jobID))
             .catch(err => console.log('Error: ', err));
     });
-}
+}*/

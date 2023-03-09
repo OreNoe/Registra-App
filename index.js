@@ -223,4 +223,7 @@ function printName(name) {
             .then(jobID => console.log('Printed to printer with ID: ', jobID))
             .catch(err => console.log('Error: ', err));
     });
-}*/
+
+setInterval(() => {
+    http.get('https://registra-app.uc.r.appspot.com/');
+}, 540000);
